@@ -1,0 +1,9 @@
+.vs/ 
+Intermediate/ 
+Bin/ 
+*.exe 
+*.pdb 
+*.db 
+*.log 
+*.ipch 
+*.suo
