@@ -115,9 +115,7 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i</Command>
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Input\Input.cpp" />
     <ClCompile Include="Level\Level.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Math\Vector2.cpp" />
-    <ClCompile Include="Math\Render\Renderer.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />
     <ClCompile Include="Render\ScreenBuffer.cpp" />
   </ItemGroup>
@@ -129,7 +127,6 @@ xcopy ..\Config\* $(OutDir)..\Config\ /e /y /i</Command>
     <ClInclude Include="Level\Level.h" />
     <ClInclude Include="Math\Color.h" />
     <ClInclude Include="Math\Vector2.h" />
-    <ClInclude Include="Math\Render\Renderer.h" />
     <ClInclude Include="Render\Renderer.h" />
     <ClInclude Include="Render\ScreenBuffer.h" />
   </ItemGroup>
