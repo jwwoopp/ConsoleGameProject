@@ -2,6 +2,38 @@
 
 #include <Core/Core.h>
 #include <memory>		// 스마트 포인터 사용을 위해.
+#include <string>
+#include <vector>
+#include <unordered_map>
+
+enum VarType
+{
+	None,
+	Integer,
+	Float,
+	String,
+	Boolean
+};
+
+class Variable
+{
+public:
+	const char* GetName() const { return name; }
+
+private:
+	// 변수 이름 (framerate).
+	char* name = nullptr;
+
+	// 변수 타입 (열거형).
+	VarType type = VarType::None;
+
+	// 값
+	void* value = nullptr;
+
+};
+
+inline std::unordered_map<std::string, Variable> variableMap;
+inline std::vector<Variable> variableList;
 
 
 // CraftEngine 프로젝트 안의 클래스는 Craft 네임 스페이스 사용.
@@ -20,6 +52,7 @@ namespace Craft
 		// 엔진 설정 (데이터).
 		struct Setting
 		{
+
 			// 목표 프레임 수 (초당 프레임).
 			float framerate = 0.0f;
 
