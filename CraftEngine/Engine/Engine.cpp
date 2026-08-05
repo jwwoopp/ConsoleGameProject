@@ -1,5 +1,7 @@
 ﻿#include "Engine.h"
 #include <Level/Level.h>
+#include <Input/Input.h>
+#include <Math/Render/Renderer.h>
 
 #include <iostream>
 #include <Windows.h>
@@ -9,22 +11,31 @@ namespace Craft
 {
 	// 전역 변수 초기화.
 	Engine* Engine::instance = nullptr;
-	
+
 	Engine::Engine()
 	{
 		// ! -> Not -> 불리언 값을 뒤집음.
 		// !true => false;
-		
+
 		// instance 초기화.
 		assert(!instance && "instance is not null");
 		instance = this;
+
+		// 엔진 설정 로드.
+		LoadEngineSetting();
+
+		// 입력 객체 생성.
+		input = std::make_unique<Input>();
+
+		// 렌더러 객체 생성.
+		renderer = std::make_unique<Renderer>();
 	}
 
 	Engine::~Engine()
 	{
 		instance = nullptr;
 	}
-	
+
 	void Engine::Run()
 	{
 		// 고해상도 타이머 사용.
@@ -53,7 +64,7 @@ namespace Craft
 			}
 
 			// 프레임 처리.
-			 
+
 			// 입력 처리.
 			ProcessInput();
 
@@ -65,9 +76,9 @@ namespace Craft
 			// 2. (현재 시간 - 이전 시간) / 시간 단위(해상도)
 			//    -> 초단위로 변환.
 			//    예) 밀리세컨드(1/1000초). 200밀리세컨드
-			
+
 			float deltaTime
-			= static_cast<float>(current - previous)
+				= static_cast<float>(current - previous)
 				/ static_cast<float>(frequency.QuadPart);
 
 			// 고정 프레임 처리.
@@ -75,7 +86,7 @@ namespace Craft
 			// 프레임 처리.
 			if (deltaTime >= oneFrameTime)
 			{
-			
+
 				// 게임 이벤트 함수 호출.
 				OnInitialized();
 
@@ -141,7 +152,15 @@ namespace Craft
 
 	void Engine::ProcessInput()
 	{
+		assert(input && "input should not be null here");
+		if (!input)
+		{
+			return;
+		}
+		input->ProcessInput();
 	}
+
+
 	void Engine::OnInitialized()
 	{
 		// 레벨 초기화 처리.
@@ -176,6 +195,7 @@ namespace Craft
 		mainLevel->Tick(deltaTime);
 
 	}
+
 	void Engine::Draw()
 	{
 		if (!mainLevel)
@@ -186,11 +206,88 @@ namespace Craft
 		// 레벨에 이벤트 전달.
 		mainLevel->Draw();
 
+		// 렌더러에 Draw 이벤트 호출.
+		if (!renderer)
+		{
+			return;
+		}
+
+		renderer->Draw();
 	}
+
 	void Engine::SavePreviousInputStates()
 	{
+		assert(input && "input should not be null here");
+		if (!input)
+		{
+			return;
+		}
+		input->SavePreviousStates();
 	}
+
 	void Engine::Shutdown()
 	{
+	}
+	void Engine::LoadEngineSetting()
+	{
+		// 파일 열기 (개행 문자 처리를 쉽게 텍스트 모드로 열기).
+		FILE* file = nullptr;
+		fopen_s(&file, "../Config/Setting.txt", "rt");
+
+		// 예외처리.
+		if (!file)
+		{
+			std::cout << "Failed to open engine setting file.\n";
+
+			// 디버그 모드에서 강제 중단 시키는 기능.
+			__debugbreak();
+			return;
+		}
+
+		// 데이터 읽어오기.
+		const int bufferSize = 2048;
+		char buffer[bufferSize] = {};
+
+		size_t readSize
+			= fread(buffer, sizeof(char), bufferSize, file);
+
+		// 값 저장을 위해 서식 해석 (파싱-Parsing).
+		// 문자열 자르기(Split).
+		char* context = nullptr;
+		char* token = nullptr;
+		// 파일에서 읽은 전체 문자열을 개행(\n)문자 기준으로 처음 자르기.
+		token = strtok_s(buffer, "\n", &context);
+
+		// 반복해서 자르기
+		while (token)
+		{
+			// 공백 전까지 읽은 문자열을 저장할 변수.
+			char key[15] = {};
+
+			// 포맷을 지정한 문자열 읽기.
+			// 공백 문자를 만나면 그 전까지 읽어서 저장.
+			sscanf_s(token, "%s", key, 15);
+
+			// 키 값을 비교해서 값 설정.
+			if (strcmp(key, "framerate") == 0)
+			{
+				sscanf_s(token, "framerate = %f", &setting.framerate);
+			}
+			else if (strcmp(key, "width") == 0)
+			{
+				sscanf_s(token, "width = %d", &setting.width);
+			}
+			else if (strcmp(key, "height") == 0)
+			{
+				sscanf_s(token, "height = %d", &setting.height);
+			}
+
+			// 나머지 문자열 자르기(개행 문자 기준으로).
+			token = strtok_s(nullptr, "\n", &context);
+		}
+
+		// 파일 닫기.
+		fclose(file);
+		file = nullptr;
 	}
 }
