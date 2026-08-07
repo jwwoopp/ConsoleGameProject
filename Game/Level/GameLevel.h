@@ -7,6 +7,15 @@
 // 소코반 -> 
 class GameLevel : public Craft::Level
 {
+	TYPE_DECLARATIONS(GameLevel, Level)
+
+public:
+	// 플레이어가 이동하려는 위치가 이동 가능한지를 판단해주는 함수.
+	bool CanMove(
+		const Craft::Vector2& playerPosition,
+		const Craft::Vector2& nextPosition
+	);
+
 private:
 	// 레벨 초기화 함수.
 	virtual void OnInitialized() override;
