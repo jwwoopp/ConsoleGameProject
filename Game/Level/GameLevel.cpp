@@ -1,7 +1,14 @@
 ﻿#include "GameLevel.h"
+#include <Actor/Box.h>
+#include <Actor/Ground.h>
+#include <Actor/Player.h>
+#include <Actor/Target.h>
+#include <Actor/Wall.h>
+
 #include <iostream>
 #include <cassert>
 
+using namespace Craft;
 void GameLevel::OnInitialized()
 {
 	Level::OnInitialized();
@@ -48,7 +55,82 @@ void GameLevel::LoadMap(const std::string& filename)
 	// 어서트.
 	assert(readSize > 0 && "No data is in the stage file.");
 
-	// Todo: 읽은 데이터를 기반으로 로직 제작.
+	// 읽은 데이터를 기반으로 로직 제작.
+	// 1. 화면에 액터를 그리기.	
+
+	// 문자열에 저장된 값을 접근할 때 사용할 인덱스.
+	int index = 0;
+
+	// 액터 생성에 사용할 위치 값.
+	Vector2 position;
+	while (true)
+	{
+		// 종료 조건 - 내용을 모두 읽었는지 파악.
+		if (index >= fileSize)
+		{
+			break;
+		}
+
+		// 이번에 확인할 문자 값.
+		char mapCharacter = buffer[index];
+
+		// 인덱스 증가 처리.
+		++index;
+
+		// 현재 문자가 개행 문자라면 로직은 건너뛰고,
+		// 위치 값만 설정.
+		if (mapCharacter == '\n')
+		{
+			++position.y;
+			position.x = 0;
+			continue;
+		}
+
+		// 읽은 문자 별로 처리.
+		switch (mapCharacter)
+		{
+			// 벽.
+		case '#':
+			// 벽 액터 생성.
+			SpawnActor<Wall>(position);
+			break;
+
+			// 땅.
+		case '.':
+			// 땅 액터 생성.
+			SpawnActor<Ground>(position);
+			break;
+
+			// 플레이어.
+		case 'p':
+
+			// 플레이어는 이동이 가능하기 때문에 같은 위치에 땅 생성.
+			SpawnActor<Ground>(position);
+
+			// 플레이어 액터 생성.
+			SpawnActor<Player>(position);
+			break;
+
+			// 박스.
+			
+		case 'b':
+			// 박스는 이동이 가능하기 때문에 같은 위치에 땅 생성.
+			SpawnActor<Ground>(position);
+			
+			// 박스 액터 생성.
+			SpawnActor<Box>(position);
+			break;
+
+			// 타겟.
+		case 't':
+			// 타겟 액터 생성.
+			SpawnActor<Target>(position);
+			break;
+		}
+
+		// x 위치 업데이트.
+		++position.x;
+	};
 
 	// 모두 사용한 버퍼 해제.
 	delete[] buffer;
@@ -56,4 +138,5 @@ void GameLevel::LoadMap(const std::string& filename)
 
 	// 파일 닫기.
 	fclose(file);
+	file = nullptr;
 }
